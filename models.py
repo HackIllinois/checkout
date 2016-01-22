@@ -14,17 +14,19 @@ class Item(db.Model):
     name = db.Column(db.String(140))
     description = db.Column(db.String(320))
     quantity_left = db.Column(db.Integer)
+    item_barcodes = db.Column(db.String(1000))
 
-    def __init__(self, name, description, quantity_left):
+    def __init__(self, name, description, quantity_left, item_barcodes):
         self.name = name
         self.description = description
         self.quantity_left = int(quantity_left)
+        self.item_barcodes = item_barcodes
 
     def __repr__(self):
         return '<Item %r>' % self.name
 
 class Hacker(db.Model):
-    __tablename__ = 'items'
+    __tablename__ = 'hackers'
 
     id = db.Column(db.Integer, primary_key=True)
     barcode = db.Column(db.Integer)
