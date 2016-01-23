@@ -62,9 +62,9 @@ def checkout_item():
     hacker_barcode = request.form['hacker_barcode']
 
     selected_item = (item for item in Items.query.all() if item_barcode in item.item_barcodes)
-    selected_item.quantity_left = selected_item.quantity_left - 1
+    selected_item.quantity_left -= 1
 
-    hacker = Hacker.query.filter_by(barcode=hacker_barcode)
+    hacker = Hacker.query.filter_by(barcode=hacker_barcode).first()
     if hacker:
         hacker.items_checked_out += ',' + item_barcode
     else:
@@ -98,8 +98,20 @@ def return_item():
     item_barcode = request.form['item_barcode']
     hacker_barcode = request.form['hacker_barcode']
 
-    # TODO
-    return ''
+    selected_item = (item for item in Items.query.all() if item_barcode in item.item_barcodes)
+    selected_item.quantity_left += 1
+
+    hacker = Hacker.query.filter_by(barcode=hacker_barcode).first()
+    if hacker:
+        hacker.items_checked_out.replace(item_barcode + ',', '')
+    db.session.commit()
+
+    hacker_json = {
+        'id': hacker.id,
+        'barcode': hacker.barcode,
+        'items_checked_out': hacker.items_checked_out
+    }
+    return jsonify(hacker_json)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
