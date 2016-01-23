@@ -21,8 +21,11 @@ def all_items():
     return jsonify(items=items_json)
 
 @app.route('/hacker/<int:hacker_barcode>', methods=['GET'])
-def hacker_items():
+def hacker_items(hacker_barcode):
     hacker = Hacker.query.filter_by(barcode=hacker_barcode).first()
+    if not hacker:
+        return abort(404)
+
     hacker_json = {
         'id': hacker.id,
         'barcode': hacker.barcode,
@@ -61,12 +64,17 @@ def checkout_item():
     item_barcode = request.form['item_barcode']
     hacker_barcode = request.form['hacker_barcode']
 
-    selected_item = (item for item in Items.query.all() if item_barcode in item.item_barcodes)
+    selected_item = None
+    for item in Item.query.all():
+        if item_barcode in item.item_barcodes:
+            selected_item = item
+    if not selected_item:
+        abort(404)
     selected_item.quantity_left -= 1
 
     hacker = Hacker.query.filter_by(barcode=hacker_barcode).first()
     if hacker:
-        hacker.items_checked_out += ',' + item_barcode
+        hacker.items_checked_out += item_barcode + ','
     else:
         hacker = Hacker(hacker_barcode, item_barcode)
         db.session.add(hacker)
@@ -98,7 +106,12 @@ def return_item():
     item_barcode = request.form['item_barcode']
     hacker_barcode = request.form['hacker_barcode']
 
-    selected_item = (item for item in Items.query.all() if item_barcode in item.item_barcodes)
+    selected_item = None
+    for item in Item.query.all():
+        if item_barcode in item.item_barcodes:
+            selected_item = item
+    if not selected_item:
+        abort(404)
     selected_item.quantity_left += 1
 
     hacker = Hacker.query.filter_by(barcode=hacker_barcode).first()
@@ -116,4 +129,4 @@ def return_item():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     db.init_app(app)
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port)
