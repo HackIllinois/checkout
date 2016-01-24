@@ -74,9 +74,9 @@ def checkout_item():
 
     hacker = Hacker.query.filter_by(barcode=hacker_barcode).first()
     if hacker:
-        hacker.items_checked_out += item_barcode + ','
+        hacker.items_checked_out = hacker.items_checked_out + item_barcode + ','
     else:
-        hacker = Hacker(hacker_barcode, item_barcode)
+        hacker = Hacker(hacker_barcode, item_barcode + ',')
         db.session.add(hacker)
     db.session.commit()
 
@@ -116,7 +116,7 @@ def return_item():
 
     hacker = Hacker.query.filter_by(barcode=hacker_barcode).first()
     if hacker:
-        hacker.items_checked_out.replace(item_barcode + ',', '')
+        hacker.items_checked_out = hacker.items_checked_out.replace(item_barcode + ',', '')
     db.session.commit()
 
     hacker_json = {
